@@ -4,6 +4,8 @@ import { ArrowLeft, Upload, X } from 'lucide-react'
 import { useItem, useItemMutations } from '../../hooks/useItens'
 import { useCategorias } from '../../hooks/useCategorias'
 import { useAmbientes } from '../../hooks/useAmbientes'
+import { useTotalItens } from '../../hooks/useTotalItens'
+import { montarPatrimonioPreview } from '../../lib/patrimonio'
 import PhotoUpload from '../../components/PhotoUpload'
 import type { EstadoItem, ItemFoto } from '../../types'
 
@@ -20,9 +22,9 @@ export default function ItemForm() {
   const { data: item } = useItem(id)
   const { data: categorias } = useCategorias()
   const { data: ambientes } = useAmbientes()
+  const { data: totalItens } = useTotalItens()
   const { criar, atualizar, uploadFotos, removerFoto } = useItemMutations()
 
-  const [patrimonio, setPatrimonio] = useState('')
   const [nome, setNome] = useState('')
   const [descricao, setDescricao] = useState('')
   const [categoriaId, setCategoriaId] = useState('')
@@ -39,7 +41,6 @@ export default function ItemForm() {
 
   useEffect(() => {
     if (item) {
-      setPatrimonio(item.patrimonio)
       setNome(item.nome)
       setDescricao(item.descricao || '')
       setCategoriaId(item.categoria_id || '')
@@ -51,7 +52,6 @@ export default function ItemForm() {
     }
   }, [item])
 
-  // Libera as URLs de pré-visualização ao desmontar o componente
   useEffect(() => {
     return () => {
       pendingFotos.forEach((p) => URL.revokeObjectURL(p.preview))
@@ -77,12 +77,15 @@ export default function ItemForm() {
     })
   }
 
+  const ambienteNome = ambientes?.find((a) => a.id === ambienteId)?.nome || ''
+  const categoriaNome = categorias?.find((c) => c.id === categoriaId)?.nome || ''
+  const patrimonioPreview = montarPatrimonioPreview(ambienteNome, categoriaNome, nome, (totalItens ?? 0) + 1)
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setSaving(true)
     try {
       const payload = {
-        patrimonio,
         nome,
         descricao,
         categoria_id: categoriaId || null,
@@ -97,9 +100,9 @@ export default function ItemForm() {
         await atualizar.mutateAsync({ id, ...payload })
         navigate(`/itens/${id}`)
       } else {
+        // patrimonio não é enviado: o banco gera automaticamente (trigger gerar_patrimonio)
         const novo = await criar.mutateAsync(payload)
 
-        // Envia as fotos que ficaram pendentes durante a criação
         if (pendingFotos.length > 0) {
           await uploadFotos.mutateAsync({
             itemId: novo.id,
@@ -133,15 +136,24 @@ export default function ItemForm() {
       <h1 className="text-2xl font-bold">{isEdit ? 'Editar item' : 'Novo item'}</h1>
 
       <form onSubmit={handleSubmit} className="card space-y-5 p-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label className="label">Nº de patrimônio</label>
-            <input className="input" required value={patrimonio} onChange={(e) => setPatrimonio(e.target.value)} />
-          </div>
-          <div>
-            <label className="label">Nome do item</label>
-            <input className="input" required value={nome} onChange={(e) => setNome(e.target.value)} />
-          </div>
+        <div>
+          <label className="label">Nº de patrimônio</label>
+          <input
+            className="input bg-gray-100 font-mono text-gray-600"
+            value={isEdit ? item?.patrimonio || '' : patrimonioPreview}
+            readOnly
+            disabled
+          />
+          {!isEdit && (
+            <p className="mt-1 text-xs text-gray-400">
+              Gerado automaticamente ao salvar (ambiente + categoria + nome + sequencial).
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="label">Nome do item</label>
+          <input className="input" required value={nome} onChange={(e) => setNome(e.target.value)} />
         </div>
 
         <div>
