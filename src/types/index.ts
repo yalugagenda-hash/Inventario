@@ -3,6 +3,7 @@ export interface Categoria {
   nome: string
   descricao?: string | null
   cor?: string | null
+  sigla?: string | null
   created_at: string
 }
 
@@ -10,6 +11,7 @@ export interface Ambiente {
   id: string
   nome: string
   descricao?: string | null
+  sigla?: string | null
   created_at: string
 }
 
@@ -26,6 +28,7 @@ export interface ItemFoto {
 export interface Item {
   id: string
   patrimonio: string
+  numero: number
   nome: string
   descricao?: string | null
   categoria_id: string | null
