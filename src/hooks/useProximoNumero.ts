@@ -3,18 +3,24 @@ import { supabase } from '../lib/supabase'
 
 /**
  * Calcula o menor número inteiro positivo ainda não utilizado
- * pelos itens cadastrados. Usado apenas para a PRÉVIA no formulário
- * — o valor definitivo é sempre recalculado pelo banco (trigger
- * gerar_patrimonio) no momento do salvamento, evitando duplicidade.
+ * DENTRO da mesma combinação (mesmo prefixo: ambiente + categoria
+ * + nome do item). Usado apenas para a PRÉVIA no formulário — o
+ * valor definitivo é sempre recalculado pelo banco (trigger
+ * gerar_patrimonio) no momento do salvamento.
  */
-export function useProximoNumero() {
+export function useProximoNumero(prefixo: string) {
   return useQuery({
-    queryKey: ['itens-proximo-numero'],
+    queryKey: ['itens-proximo-numero', prefixo],
+    enabled: !!prefixo,
     queryFn: async () => {
-      const { data, error } = await supabase.from('itens').select('numero')
+      const { data, error } = await supabase.from('itens').select('patrimonio').ilike('patrimonio', `${prefixo}-%`)
       if (error) throw error
 
-      const usados = new Set((data || []).map((d: any) => d.numero).filter((n: number | null) => n != null))
+      const usados = new Set<number>()
+      for (const row of data || []) {
+        const match = row.patrimonio?.match(/-(\d+)$/)
+        if (match) usados.add(parseInt(match[1], 10))
+      }
 
       let candidato = 1
       while (usados.has(candidato)) candidato++
