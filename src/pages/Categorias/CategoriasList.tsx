@@ -16,12 +16,14 @@ export default function CategoriasList() {
   const [nome, setNome] = useState('')
   const [descricao, setDescricao] = useState('')
   const [cor, setCor] = useState('#3b82f6')
+  const [sigla, setSigla] = useState('')
 
   function openNew() {
     setEditing(null)
     setNome('')
     setDescricao('')
     setCor('#3b82f6')
+    setSigla('')
     setShowForm(true)
   }
 
@@ -30,15 +32,17 @@ export default function CategoriasList() {
     setNome(c.nome)
     setDescricao(c.descricao || '')
     setCor(c.cor || '#3b82f6')
+    setSigla(c.sigla || '')
     setShowForm(true)
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    const siglaFormatada = sigla.trim() ? sigla.trim().toUpperCase() : null
     if (editing) {
-      await atualizar.mutateAsync({ id: editing.id, nome, descricao, cor })
+      await atualizar.mutateAsync({ id: editing.id, nome, descricao, cor, sigla: siglaFormatada })
     } else {
-      await criar.mutateAsync({ nome, descricao, cor })
+      await criar.mutateAsync({ nome, descricao, cor, sigla: siglaFormatada })
     }
     setShowForm(false)
   }
@@ -108,6 +112,19 @@ export default function CategoriasList() {
             <div>
               <label className="label">Cor</label>
               <input type="color" className="h-10 w-16 rounded border border-gray-300" value={cor} onChange={(e) => setCor(e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Sigla para o Nº de patrimônio</label>
+              <input
+                className="input uppercase"
+                maxLength={5}
+                placeholder="Ex: MOV, ELE..."
+                value={sigla}
+                onChange={(e) => setSigla(e.target.value)}
+              />
+              <p className="mt-1 text-xs text-gray-400">
+                Opcional. Se deixar em branco, o sistema usa automaticamente as 3 primeiras letras de "{nome || 'nome da categoria'}".
+              </p>
             </div>
             <div className="flex justify-end gap-2">
               <button type="button" className="btn-secondary" onClick={() => setShowForm(false)}>
