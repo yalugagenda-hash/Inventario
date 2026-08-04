@@ -22,13 +22,23 @@ function resolverSigla(entidade?: EntidadeComSigla | null, tamanho = 3): string 
   return sigla(entidade.nome || '', tamanho)
 }
 
+/** Monta o prefixo do patrimônio (sem o número final), usado para agrupar a numeração por combinação. */
+export function montarPrefixoPatrimonio(
+  ambiente: EntidadeComSigla | null | undefined,
+  categoria: EntidadeComSigla | null | undefined,
+  nomeItem: string,
+): string {
+  const partes = [resolverSigla(ambiente), resolverSigla(categoria), sigla(nomeItem)].filter(Boolean)
+  return `YAL${partes.length ? '-' + partes.join('-') : ''}`
+}
+
 export function montarPatrimonioPreview(
   ambiente: EntidadeComSigla | null | undefined,
   categoria: EntidadeComSigla | null | undefined,
   nomeItem: string,
   proximoNumero: number,
 ): string {
+  const prefixo = montarPrefixoPatrimonio(ambiente, categoria, nomeItem)
   const numero = String(proximoNumero).padStart(3, '0')
-  const partes = [resolverSigla(ambiente), resolverSigla(categoria), sigla(nomeItem)].filter(Boolean)
-  return `YAL${partes.length ? '-' + partes.join('-') : ''}-${numero}`
+  return `${prefixo}-${numero}`
 }
