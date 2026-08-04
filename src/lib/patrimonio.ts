@@ -10,13 +10,25 @@ export function sigla(texto: string, tamanho = 3): string {
   return apenasLetras.slice(0, tamanho).toUpperCase()
 }
 
+interface EntidadeComSigla {
+  nome?: string | null
+  sigla?: string | null
+}
+
+/** Usa a sigla customizada cadastrada, se existir; senão gera das 3 primeiras letras do nome. */
+function resolverSigla(entidade?: EntidadeComSigla | null, tamanho = 3): string {
+  if (!entidade) return ''
+  if (entidade.sigla && entidade.sigla.trim()) return entidade.sigla.trim().toUpperCase()
+  return sigla(entidade.nome || '', tamanho)
+}
+
 export function montarPatrimonioPreview(
-  ambiente: string,
-  categoria: string,
-  nome: string,
+  ambiente: EntidadeComSigla | null | undefined,
+  categoria: EntidadeComSigla | null | undefined,
+  nomeItem: string,
   proximoNumero: number,
 ): string {
   const numero = String(proximoNumero).padStart(3, '0')
-  const partes = [sigla(ambiente), sigla(categoria), sigla(nome)].filter(Boolean)
+  const partes = [resolverSigla(ambiente), resolverSigla(categoria), sigla(nomeItem)].filter(Boolean)
   return `YAL${partes.length ? '-' + partes.join('-') : ''}-${numero}`
 }
