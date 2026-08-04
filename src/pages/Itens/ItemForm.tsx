@@ -4,7 +4,7 @@ import { ArrowLeft, Upload, X } from 'lucide-react'
 import { useItem, useItemMutations } from '../../hooks/useItens'
 import { useCategorias } from '../../hooks/useCategorias'
 import { useAmbientes } from '../../hooks/useAmbientes'
-import { useTotalItens } from '../../hooks/useTotalItens'
+import { useProximoNumero } from '../../hooks/useProximoNumero'
 import { montarPatrimonioPreview } from '../../lib/patrimonio'
 import PhotoUpload from '../../components/PhotoUpload'
 import type { EstadoItem, ItemFoto } from '../../types'
@@ -22,7 +22,7 @@ export default function ItemForm() {
   const { data: item } = useItem(id)
   const { data: categorias } = useCategorias()
   const { data: ambientes } = useAmbientes()
-  const { data: totalItens } = useTotalItens()
+  const { data: proximoNumero } = useProximoNumero()
   const { criar, atualizar, uploadFotos, removerFoto } = useItemMutations()
 
   const [nome, setNome] = useState('')
@@ -77,9 +77,9 @@ export default function ItemForm() {
     })
   }
 
-  const ambienteNome = ambientes?.find((a) => a.id === ambienteId)?.nome || ''
-  const categoriaNome = categorias?.find((c) => c.id === categoriaId)?.nome || ''
-  const patrimonioPreview = montarPatrimonioPreview(ambienteNome, categoriaNome, nome, (totalItens ?? 0) + 1)
+  const ambienteSelecionado = ambientes?.find((a) => a.id === ambienteId)
+  const categoriaSelecionada = categorias?.find((c) => c.id === categoriaId)
+  const patrimonioPreview = montarPatrimonioPreview(ambienteSelecionado, categoriaSelecionada, nome, proximoNumero ?? 1)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
