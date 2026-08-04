@@ -15,11 +15,13 @@ export default function AmbientesList() {
 
   const [nome, setNome] = useState('')
   const [descricao, setDescricao] = useState('')
+  const [sigla, setSigla] = useState('')
 
   function openNew() {
     setEditing(null)
     setNome('')
     setDescricao('')
+    setSigla('')
     setShowForm(true)
   }
 
@@ -27,15 +29,17 @@ export default function AmbientesList() {
     setEditing(a)
     setNome(a.nome)
     setDescricao(a.descricao || '')
+    setSigla(a.sigla || '')
     setShowForm(true)
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    const siglaFormatada = sigla.trim() ? sigla.trim().toUpperCase() : null
     if (editing) {
-      await atualizar.mutateAsync({ id: editing.id, nome, descricao })
+      await atualizar.mutateAsync({ id: editing.id, nome, descricao, sigla: siglaFormatada })
     } else {
-      await criar.mutateAsync({ nome, descricao })
+      await criar.mutateAsync({ nome, descricao, sigla: siglaFormatada })
     }
     setShowForm(false)
   }
@@ -54,6 +58,7 @@ export default function AmbientesList() {
           <thead className="border-b border-gray-200 bg-gray-50 text-left text-gray-500">
             <tr>
               <th className="px-4 py-3">Nome</th>
+              <th className="px-4 py-3">Sigla</th>
               <th className="px-4 py-3">Descrição</th>
               <th className="px-4 py-3 w-24">Ações</th>
             </tr>
@@ -62,6 +67,11 @@ export default function AmbientesList() {
             {ambientes?.map((a) => (
               <tr key={a.id} className="border-b border-gray-100 last:border-0">
                 <td className="px-4 py-3">{a.nome}</td>
+                <td className="px-4 py-3">
+                  <span className="rounded bg-gray-100 px-2 py-0.5 font-mono text-xs text-gray-600">
+                    {a.sigla || '(auto)'}
+                  </span>
+                </td>
                 <td className="px-4 py-3 text-gray-500">{a.descricao || '-'}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
@@ -77,7 +87,7 @@ export default function AmbientesList() {
             ))}
             {!isLoading && ambientes?.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={4} className="px-4 py-8 text-center text-gray-400">
                   Nenhum ambiente cadastrado.
                 </td>
               </tr>
@@ -96,6 +106,19 @@ export default function AmbientesList() {
             <div>
               <label className="label">Descrição</label>
               <textarea className="input" rows={2} value={descricao} onChange={(e) => setDescricao(e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Sigla para o Nº de patrimônio</label>
+              <input
+                className="input uppercase"
+                maxLength={5}
+                placeholder="Ex: SSA, LN..."
+                value={sigla}
+                onChange={(e) => setSigla(e.target.value)}
+              />
+              <p className="mt-1 text-xs text-gray-400">
+                Opcional. Se deixar em branco, o sistema usa automaticamente as 3 primeiras letras de "{nome || 'nome do ambiente'}".
+              </p>
             </div>
             <div className="flex justify-end gap-2">
               <button type="button" className="btn-secondary" onClick={() => setShowForm(false)}>
