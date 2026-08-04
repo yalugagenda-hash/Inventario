@@ -1,12 +1,52 @@
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Patrimônio yalug - Inventário</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+export interface Categoria {
+  id: string
+  nome: string
+  descricao?: string | null
+  cor?: string | null
+  sigla?: string | null
+  created_at: string
+}
+
+export interface Ambiente {
+  id: string
+  nome: string
+  descricao?: string | null
+  sigla?: string | null
+  created_at: string
+}
+
+export type EstadoItem = 'novo' | 'bom' | 'regular' | 'ruim' | 'baixado'
+
+export interface ItemFoto {
+  id: string
+  item_id: string
+  url: string
+  path: string
+  created_at: string
+}
+
+export interface Item {
+  id: string
+  patrimonio: string
+  numero: number
+  nome: string
+  descricao?: string | null
+  categoria_id: string | null
+  ambiente_id: string | null
+  estado: EstadoItem
+  valor_aquisicao?: number | null
+  data_aquisicao?: string | null
+  observacoes?: string | null
+  created_at: string
+  updated_at: string
+  categoria?: Categoria | null
+  ambiente?: Ambiente | null
+  fotos?: ItemFoto[]
+}
+
+export interface ItemFiltros {
+  busca?: string
+  categoria_id?: string
+  ambiente_id?: string
+  estado?: EstadoItem | ''
+}
